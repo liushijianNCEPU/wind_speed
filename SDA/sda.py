@@ -47,6 +47,7 @@ from theano.tensor.shared_randomstreams import RandomStreams
 from logistic_sgd import LogisticRegression, load_data
 from mlp import HiddenLayer
 from dA import dA
+from GPR import gpr
 
 
 # start-snippet-1
