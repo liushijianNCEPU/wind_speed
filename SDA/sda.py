@@ -38,7 +38,7 @@ import timeit
 
 import numpy
 import pandas as pd
-from sklearn import preprocessing
+# from sklearn import preprocessing
 
 import theano
 import theano.tensor as T
@@ -520,8 +520,8 @@ def speed_SdA(finetune_lr=0.1, pretraining_epochs=15,
     speed = pd.read_csv('D:\Study\Project\Python\wind-speed-forecasting_v1\data\G1_speed.csv')
     for i in range(trainNum):
         datasets[i, :] = speed.iloc[i:(i + 10), 1]
-    min_max_scaler = preprocessing.MinMaxScaler()
-    datasets = min_max_scaler.fit_transform(datasets)
+    # min_max_scaler = preprocessing.MinMaxScaler()
+    # datasets = min_max_scaler.fit_transform(datasets)
     train_set_x = datasets[0:(trainNum*10/11), :]
     train_set_x = theano.shared(numpy.asarray(train_set_x,
                                            dtype=theano.config.floatX),
