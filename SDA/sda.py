@@ -44,10 +44,9 @@ import theano
 import theano.tensor as T
 from theano.tensor.shared_randomstreams import RandomStreams
 
-from logistic_sgd import LogisticRegression, load_data
 from mlp import HiddenLayer
 from dA import dA
-from GPR import gpr
+from GaussProcess import GaussProcessRegression
 
 
 # start-snippet-1
@@ -165,23 +164,24 @@ class SdA(object):
                           bhid=sigmoid_layer.b)
             self.dA_layers.append(dA_layer)
         # end-snippet-2
-        # We now need to add a logistic layer on top of the MLP
-        self.logLayer = LogisticRegression(
+        # We now need to add a GaussProcess layer on top of the MLP
+        self.logLayer = GaussProcessRegression(
             input=self.sigmoid_layers[-1].output,
             n_in=hidden_layers_sizes[-1],
-            n_out=n_outs
+            n_out=n_outs,
+            out=self.y
         )
 
-        self.params.extend(self.logLayer.params)
+        # self.params.extend(self.logLayer.params)
         # construct a function that implements one step of finetunining
 
         # compute the cost for second phase of training,
         # defined as the negative log likelihood
-        self.finetune_cost = self.logLayer.negative_log_likelihood(self.y)
+        self.finetune_cost = self.logLayer.negative_log_likelihood()
         # compute the gradients with respect to the model parameters
         # symbolic variable that points to the number of errors made on the
         # minibatch given by self.x and self.y
-        self.errors = self.logLayer.errors(self.y)
+        self.errors = self.logLayer.errors()
 
 
     def pretraining_functions(self, train_set_x, batch_size):
@@ -255,9 +255,9 @@ class SdA(object):
         :param learning_rate: learning rate used during finetune stage
         '''
         trainNum = datasets.shape[0]
-        train_set_x = datasets[0:(trainNum/2), :]
-        valid_set_x = datasets[(trainNum/2):(trainNum*3/4), :]
-        test_set_x = datasets[(trainNum*3/4):trainNum, :]
+        train_set_x = datasets[0:(trainNum*10/11), :]
+        valid_set_x = datasets[(trainNum*50/66):(trainNum*10/11), :]
+        test_set_x = datasets[(trainNum*10/11):trainNum, :]
         train_set_x = theano.shared(numpy.asarray(train_set_x,
                                                dtype=theano.config.floatX),
                                  borrow=True)
@@ -522,7 +522,7 @@ def speed_SdA(finetune_lr=0.1, pretraining_epochs=15,
         datasets[i, :] = speed.iloc[i:(i + 10), 1]
     min_max_scaler = preprocessing.MinMaxScaler()
     datasets = min_max_scaler.fit_transform(datasets)
-    train_set_x = datasets[0:(trainNum/2), :]
+    train_set_x = datasets[0:(trainNum*10/11), :]
     train_set_x = theano.shared(numpy.asarray(train_set_x,
                                            dtype=theano.config.floatX),
                             borrow=True)
@@ -545,7 +545,7 @@ def speed_SdA(finetune_lr=0.1, pretraining_epochs=15,
         numpy_rng=numpy_rng,
         n_ins=10,
         hidden_layers_sizes=[6, 6, 6],
-        n_outs=10
+        n_outs=1
     )
     # end-snippet-3 start-snippet-4
     #########################
@@ -601,12 +601,11 @@ def speed_SdA(finetune_lr=0.1, pretraining_epochs=15,
 
     done_looping = False
     epoch = 0
-    v = []
 
     while (epoch < training_epochs) and (not done_looping):
         epoch = epoch + 1
         for minibatch_index in range(n_train_batches):
-            v.append(train_fn(minibatch_index))
+            minibatch_avg_cost = train_fn(minibatch_index)
             iter = (epoch - 1) * n_train_batches + minibatch_index
 
             if (iter + 1) % validation_frequency == 0:
@@ -641,7 +640,6 @@ def speed_SdA(finetune_lr=0.1, pretraining_epochs=15,
             if patience <= iter:
                 done_looping = True
                 break
-    numpy.save('D:\Study\Project\Python\wind-speed-forecasting_v1\data\SDA\G1_highlevel.npy',v)
 
 
 if __name__ == '__main__':
