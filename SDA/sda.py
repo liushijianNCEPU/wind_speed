@@ -169,7 +169,7 @@ class SdA(object):
             input=self.sigmoid_layers[-1].output,
             n_in=hidden_layers_sizes[-1],
             n_out=n_outs,
-            out=self.y
+            output=self.y
         )
 
         # self.params.extend(self.logLayer.params)
@@ -267,9 +267,9 @@ class SdA(object):
         test_set_x = theano.shared(numpy.asarray(test_set_x,
                                                dtype=theano.config.floatX),
                                  borrow=True)
-        train_set_y = datasets[0:(trainNum/2), :]
-        valid_set_y = datasets[(trainNum/2):(trainNum*3/4), :]
-        test_set_y = datasets[(trainNum*3/4):trainNum, :]
+        train_set_y = datasets[0:(trainNum/*10/11), :]
+        valid_set_y = datasets[(trainNum*50/66):(trainNum*10/11), :]
+        test_set_y = datasets[(trainNum*10/11):trainNum, :]
         train_set_y = theano.shared(numpy.asarray(train_set_y,
                                                dtype=theano.config.floatX),
                                  borrow=True)
@@ -517,7 +517,7 @@ def speed_SdA(finetune_lr=0.1, pretraining_epochs=15,
     featureNum = 10
 
     datasets = numpy.zeros([trainNum, featureNum])
-    speed = pd.read_csv('D:\Study\Project\Python\wind-speed-forecasting_v1\data\G1_speed.csv')
+    speed = pd.read_csv('../data/G1_speed.csv')
     for i in range(trainNum):
         datasets[i, :] = speed.iloc[i:(i + 10), 1]
     # min_max_scaler = preprocessing.MinMaxScaler()
