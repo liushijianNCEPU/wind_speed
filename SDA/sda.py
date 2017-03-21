@@ -168,7 +168,7 @@ class SdA(object):
         self.logLayer = GaussProcessRegression(
             input=self.sigmoid_layers[-1].output,
             n_in=hidden_layers_sizes[-1],
-            n_out=n_outs,
+            n_out=n_outs
             output=self.y
         )
 
@@ -267,9 +267,9 @@ class SdA(object):
         test_set_x = theano.shared(numpy.asarray(test_set_x,
                                                dtype=theano.config.floatX),
                                  borrow=True)
-        train_set_y = datasets[0:(trainNum/*10/11), :]
-        valid_set_y = datasets[(trainNum*50/66):(trainNum*10/11), :]
-        test_set_y = datasets[(trainNum*10/11):trainNum, :]
+        train_set_y = datasets[1:(trainNum*10/11)+1, -1]
+        valid_set_y = datasets[(trainNum*50/66)+1:(trainNum*10/11)+1, -1]
+        test_set_y = datasets[(trainNum*10/11)+1:trainNum+1, -1]
         train_set_y = theano.shared(numpy.asarray(train_set_y,
                                                dtype=theano.config.floatX),
                                  borrow=True)
@@ -299,7 +299,7 @@ class SdA(object):
 
         train_fn = theano.function(
             inputs=[index],
-            outputs=self.y,
+            outputs=self.finetune_cost,
             updates=updates,
             givens={
                 self.x: train_set_x[

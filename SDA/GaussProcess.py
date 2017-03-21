@@ -18,7 +18,7 @@ import theano.tensor as T
 class GaussProcessRegression(object):
 
 
-    def __init__(self, input, n_in, n_out, output):
+    def __init__(self, input, n_in, n_out,output):
         """ Initialize the parameters of the logistic regression
 
         :type input: theano.tensor.TensorType
@@ -34,11 +34,13 @@ class GaussProcessRegression(object):
                       which the labels lie
 
         """
+        input = np.asarray(input)
+        self.y = np.asarray(output)
         model = pyGPs.GPR()
-        model.setData(input, output)
+        model.setData(input, self.y)
         model.optimize()
         ymu, ys2, fmu, fs2, lp = model.predict(input)
-        self.lp = -lp
+        self.lp = lp
         self.ymu = ymu
 
     def negative_log_likelihood(self):
@@ -71,7 +73,7 @@ class GaussProcessRegression(object):
         # the mean (across minibatch examples) of the elements in v,
         # i.e., the mean log-likelihood across the minibatch.
         # return -T.mean(T.log(self.p_y_given_x)[T.arange(y.shape[0]), y])
-        return self.lp
+        return -self.lp
         # end-snippet-2
 
     def errors(self):
@@ -83,4 +85,4 @@ class GaussProcessRegression(object):
         :param y: corresponds to a vector that gives for each example the
                   correct label
         """
-        return numpy.mean(self.ymu-output)
+        return pyGPs.Validation.valid.RMSE(self.ymu, self.y)
